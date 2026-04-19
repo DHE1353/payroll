@@ -28,20 +28,6 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    company_id INTEGER NOT NULL,
-    employee_id INTEGER,             -- lien vers employees.id si l'utilisateur est un collaborateur
-    email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    full_name TEXT,
-    role TEXT NOT NULL DEFAULT 'employee',  -- admin | hr | manager | employee
-    active INTEGER NOT NULL DEFAULT 1,
-    created_at TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
-    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL
-  );
-
   CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     company_id INTEGER NOT NULL,
@@ -61,6 +47,20 @@ db.exec(`
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
     FOREIGN KEY (manager_id) REFERENCES employees(id) ON DELETE SET NULL,
     UNIQUE(company_id, employee_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company_id INTEGER NOT NULL,
+    employee_id INTEGER,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    full_name TEXT,
+    role TEXT NOT NULL DEFAULT 'employee',
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
+    FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE SET NULL
   );
 
   CREATE TABLE IF NOT EXISTS payroll_runs (
