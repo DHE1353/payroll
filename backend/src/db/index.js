@@ -11,7 +11,8 @@ if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+// Disable FK checks during schema creation, re-enable after
+db.pragma('foreign_keys = OFF');
 
 // Schéma de base + migrations idempotentes
 db.exec(`
@@ -160,5 +161,8 @@ ensureColumn('employees', 'job_title', 'job_title TEXT');
 ensureColumn('employees', 'manager_id', 'manager_id INTEGER');
 ensureColumn('employees', 'annual_leave_balance', 'annual_leave_balance REAL NOT NULL DEFAULT 30');
 ensureColumn('companies', 'default_leave_balance', 'default_leave_balance REAL NOT NULL DEFAULT 30');
+
+// Re-enable FK checks after schema is ready
+db.pragma('foreign_keys = ON');
 
 export default db;
