@@ -1,0 +1,18 @@
+services:
+  payroll:
+    build: .
+    container_name: payroll-app
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    volumes:
+      - payroll-data:/app/backend/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.payroll.rule=Host(`payroll.hsasoft.io`)"
+      - "traefik.http.routers.payroll.entrypoints=websecure"
+      - "traefik.http.routers.payroll.tls.certresolver=letsencrypt"
+      - "traefik.http.services.payroll.loadbalancer.server.port=80"
+
+volumes:
+  payroll-data:
