@@ -22,7 +22,7 @@ export const LOCALES = {
     'common.language': 'Langue',
 
     // Navbar
-    'nav.generate': 'Générer',
+    'nav.generate': 'WPS',
     'nav.employees': 'Employés',
     'nav.history': 'Historique',
     'nav.settings': 'Entreprise',
@@ -310,7 +310,7 @@ export const LOCALES = {
     'common.none': 'None',
     'common.language': 'Language',
 
-    'nav.generate': 'Generate',
+    'nav.generate': 'WPS',
     'nav.employees': 'Employees',
     'nav.history': 'History',
     'nav.settings': 'Company',
