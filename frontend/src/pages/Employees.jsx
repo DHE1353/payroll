@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../api.js';
 import { useI18n } from '../i18n/I18nContext.jsx';
 
-const empty = { employee_id: '', full_name: '', routing_code: '', iban: '', fixed_income: 0, variable_income: 0, active: true };
+const empty = {
+  employee_id: '', full_name: '', email: '', job_title: '', manager_id: '',
+  routing_code: '', iban: '', fixed_income: 0, variable_income: 0,
+  annual_leave_balance: 30, active: true
+};
 
 export default function Employees() {
   const { t } = useI18n();
@@ -68,6 +72,7 @@ export default function Employees() {
         <EmployeeForm
           initial={editing}
           isNew={creating}
+          employees={list}
           onCancel={() => { setEditing(null); setCreating(false); }}
           onSave={save}
         />
@@ -111,11 +116,13 @@ export default function Employees() {
   );
 }
 
-function EmployeeForm({ initial, isNew, onSave, onCancel }) {
+function EmployeeForm({ initial, isNew, onSave, onCancel, employees = [] }) {
   const { t } = useI18n();
   const [f, setF] = useState(initial);
   useEffect(() => { setF(initial); }, [initial]);
   const set = (k) => (e) => setF(x => ({ ...x, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+
+  const managerCandidates = employees.filter(emp => emp.id !== f.id && emp.active);
 
   return (
     <div className="card">
@@ -123,14 +130,26 @@ function EmployeeForm({ initial, isNew, onSave, onCancel }) {
       <div className="row">
         <div className="col"><label>{t('emp.fieldId')} *</label><input value={f.employee_id} onChange={set('employee_id')} /></div>
         <div className="col"><label>{t('emp.fieldName')}</label><input value={f.full_name || ''} onChange={set('full_name')} /></div>
+        <div className="col"><label>Email</label><input type="email" value={f.email || ''} onChange={set('email')} /></div>
+        <div className="col"><label>Job title</label><input value={f.job_title || ''} onChange={set('job_title')} /></div>
       </div>
       <div className="row" style={{ marginTop: 10 }}>
         <div className="col"><label>{t('emp.fieldRouting')} *</label><input value={f.routing_code} onChange={set('routing_code')} /></div>
         <div className="col" style={{ flex: 2 }}><label>{t('emp.fieldIban')} *</label><input value={f.iban} onChange={set('iban')} placeholder="AE..." /></div>
+        <div className="col">
+          <label>Manager</label>
+          <select value={f.manager_id || ''} onChange={set('manager_id')}>
+            <option value="">{t('common.none')}</option>
+            {managerCandidates.map(m => (
+              <option key={m.id} value={m.id}>{m.full_name || m.employee_id}</option>
+            ))}
+          </select>
+        </div>
       </div>
       <div className="row" style={{ marginTop: 10 }}>
         <div className="col"><label>{t('emp.fieldFixed')}</label><input type="number" step="0.01" value={f.fixed_income} onChange={set('fixed_income')} /></div>
         <div className="col"><label>{t('emp.fieldVariable')}</label><input type="number" step="0.01" value={f.variable_income} onChange={set('variable_income')} /></div>
+        <div className="col"><label>{t('dash.myLeaveBalance')}</label><input type="number" step="0.5" value={f.annual_leave_balance ?? 30} onChange={set('annual_leave_balance')} /></div>
         <div className="col"><label>&nbsp;</label><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={!!f.active} onChange={set('active')} style={{ width: 'auto' }} /> {t('common.active')}</label></div>
       </div>
       <div className="btn-group" style={{ marginTop: 16 }}>

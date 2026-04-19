@@ -60,7 +60,10 @@ router.post('/login', (req, res) => {
 
 // Profil + entreprise
 router.get('/me', authRequired, (req, res) => {
-  const user = db.prepare('SELECT id, email, full_name, company_id, role FROM users WHERE id = ?').get(req.user.userId);
+  const user = db.prepare(`
+    SELECT id, email, full_name, company_id, role, employee_id, active
+    FROM users WHERE id = ?
+  `).get(req.user.userId);
   const company = db.prepare('SELECT * FROM companies WHERE id = ?').get(req.user.companyId);
   res.json({ user, company });
 });

@@ -5,10 +5,16 @@ import { useI18n } from './i18n/I18nContext.jsx';
 import LanguageSwitcher from './components/LanguageSwitcher.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 import Employees from './pages/Employees.jsx';
 import Generate from './pages/Generate.jsx';
 import CompanySettings from './pages/CompanySettings.jsx';
 import History from './pages/History.jsx';
+import Leaves from './pages/Leaves.jsx';
+import Expenses from './pages/Expenses.jsx';
+import Documents from './pages/Documents.jsx';
+import Users from './pages/Users.jsx';
+import MySpace from './pages/MySpace.jsx';
 
 export default function App() {
   const { t } = useI18n();
@@ -19,13 +25,21 @@ export default function App() {
     const token = localStorage.getItem('wps_token');
     if (!token) { setAuth({ loading: false, user: null, company: null }); return; }
     api.me()
-      .then(d => setAuth({ loading: false, user: d.user, company: d.company }))
+      .then(d => setAuth({
+        loading: false,
+        user: { ...d.user, fullName: d.user.full_name, employee_id_pk: d.user.employee_id },
+        company: d.company
+      }))
       .catch(() => setAuth({ loading: false, user: null, company: null }));
   }, []);
 
   const refreshMe = async () => {
     const d = await api.me();
-    setAuth(a => ({ ...a, user: d.user, company: d.company }));
+    setAuth(a => ({
+      ...a,
+      user: { ...d.user, fullName: d.user.full_name, employee_id_pk: d.user.employee_id },
+      company: d.company
+    }));
   };
 
   const logout = () => {
@@ -46,29 +60,65 @@ export default function App() {
     );
   }
 
+  const role = auth.user.role;
+  const isAdmin = role === 'admin';
+  const isHRorAdmin = role === 'admin' || role === 'hr';
+  const canSeePayroll = isHRorAdmin;
+
+  const NavItem = ({ to, children }) => (
+    <NavLink to={to} className={({ isActive }) => isActive ? 'active' : ''}>{children}</NavLink>
+  );
+
   return (
     <>
       <header className="navbar">
         <div className="brand">📄 {t('nav.brand')} — {auth.company?.name}</div>
         <nav>
-          <NavLink to="/generate" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.generate')}</NavLink>
-          <NavLink to="/employees" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.employees')}</NavLink>
-          <NavLink to="/history" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.history')}</NavLink>
-          <NavLink to="/settings" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.settings')}</NavLink>
+          <NavItem to="/dashboard">{t('nav.dashboard')}</NavItem>
+          <NavItem to="/leaves">{t('nav.leaves')}</NavItem>
+          <NavItem to="/expenses">{t('nav.expenses')}</NavItem>
+          {isHRorAdmin && <NavItem to="/documents">{t('nav.documents')}</NavItem>}
+          {canSeePayroll && <NavItem to="/generate">{t('nav.generate')}</NavItem>}
+          {isHRorAdmin && <NavItem to="/employees">{t('nav.employees')}</NavItem>}
+          {canSeePayroll && <NavItem to="/history">{t('nav.history')}</NavItem>}
+          {isAdmin && <NavItem to="/users">{t('nav.users')}</NavItem>}
+          {isAdmin && <NavItem to="/settings">{t('nav.settings')}</NavItem>}
+          <NavItem to="/me">{t('nav.mySpace')}</NavItem>
         </nav>
         <div className="user">
           <LanguageSwitcher compact />
+          <span className="badge muted">{t('role.' + role)}</span>
           <span>{auth.user.email}</span>
           <button onClick={logout}>{t('nav.logout')}</button>
         </div>
       </header>
       <div className="container">
         <Routes>
-          <Route path="/generate" element={<Generate company={auth.company} />} />
-          <Route path="/employees" element={<Employees />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/settings" element={<CompanySettings company={auth.company} onUpdated={refreshMe} />} />
-          <Route path="*" element={<Navigate to="/generate" replace />} />
+          <Route path="/dashboard" element={<Dashboard user={auth.user} />} />
+          <Route path="/leaves" element={<Leaves user={auth.user} />} />
+          <Route path="/expenses" element={<Expenses user={auth.user} />} />
+          <Route path="/me" element={<MySpace user={auth.user} />} />
+
+          {isHRorAdmin && (
+            <>
+              <Route path="/documents" element={<Documents user={auth.user} />} />
+              <Route path="/employees" element={<Employees />} />
+            </>
+          )}
+          {canSeePayroll && (
+            <>
+              <Route path="/generate" element={<Generate company={auth.company} />} />
+              <Route path="/history" element={<History />} />
+            </>
+          )}
+          {isAdmin && (
+            <>
+              <Route path="/users" element={<Users currentUser={auth.user} />} />
+              <Route path="/settings" element={<CompanySettings company={auth.company} onUpdated={refreshMe} />} />
+            </>
+          )}
+
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </div>
     </>
