@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
+import { useI18n } from '../i18n/I18nContext.jsx';
 
 function isoMonthRange(year, month1to12) {
   const first = new Date(Date.UTC(year, month1to12 - 1, 1));
@@ -9,13 +10,14 @@ function isoMonthRange(year, month1to12) {
 }
 
 export default function Generate({ company }) {
+  const { t } = useI18n();
   const today = new Date();
   const defaultRange = isoMonthRange(today.getUTCFullYear(), today.getUTCMonth() + 1);
   const [start, setStart] = useState(defaultRange.start);
   const [end, setEnd] = useState(defaultRange.end);
   const [days, setDays] = useState('');
   const [employees, setEmployees] = useState([]);
-  const [overrides, setOverrides] = useState({}); // keyed by employee_id
+  const [overrides, setOverrides] = useState({});
   const [scr, setScr] = useState({ file_creation_date: '', file_creation_time: '', salary_month_year: '' });
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -68,73 +70,73 @@ export default function Generate({ company }) {
   return (
     <div>
       <div className="card">
-        <h2>Générer le fichier SIF</h2>
-        <div className="small">Le fichier sera téléchargé au format <strong>.xlsx</strong> avec une feuille <code>SIF</code> (lignes <code>EDR</code> + ligne <code>SCR</code>).</div>
+        <h2>{t('gen.title')}</h2>
+        <div className="small">{t('gen.help')}</div>
 
         <div className="row" style={{ marginTop: 14 }}>
           <div className="col">
-            <label>Début de période</label>
+            <label>{t('gen.periodStart')}</label>
             <input type="date" value={start} onChange={e => setStart(e.target.value)} />
           </div>
           <div className="col">
-            <label>Fin de période</label>
+            <label>{t('gen.periodEnd')}</label>
             <input type="date" value={end} onChange={e => setEnd(e.target.value)} />
           </div>
           <div className="col">
-            <label>Jours dans la période</label>
-            <input type="number" placeholder="auto" value={days} onChange={e => setDays(e.target.value)} />
+            <label>{t('gen.days')}</label>
+            <input type="number" placeholder={t('common.auto')} value={days} onChange={e => setDays(e.target.value)} />
           </div>
         </div>
 
         <div className="stats" style={{ marginTop: 16 }}>
-          <div className="stat"><div className="label">Employés inclus</div><div className="value">{totals.count}</div></div>
-          <div className="stat"><div className="label">Total à transférer</div><div className="value">{totals.sum.toLocaleString()} {company?.currency || 'AED'}</div></div>
-          <div className="stat"><div className="label">Mois/année</div><div className="value">{(start || '').slice(5,7)}/{(start || '').slice(0,4)}</div></div>
+          <div className="stat"><div className="label">{t('gen.employeesIncluded')}</div><div className="value">{totals.count}</div></div>
+          <div className="stat"><div className="label">{t('gen.totalTransfer')}</div><div className="value">{totals.sum.toLocaleString()} {company?.currency || 'AED'}</div></div>
+          <div className="stat"><div className="label">{t('gen.monthYear')}</div><div className="value">{(start || '').slice(5,7)}/{(start || '').slice(0,4)}</div></div>
         </div>
 
         {err && <div className="alert error" style={{ marginTop: 12 }}>{err}</div>}
 
-        <h3 style={{ marginTop: 20 }}>Ligne SCR (contrôle) — optionnel</h3>
-        <div className="small">Laissez vide pour utiliser les valeurs par défaut (date/heure actuelles, mois = mois de la période).</div>
+        <h3 style={{ marginTop: 20 }}>{t('gen.scrTitle')}</h3>
+        <div className="small">{t('gen.scrHelp')}</div>
         <div className="row" style={{ marginTop: 10 }}>
           <div className="col">
-            <label>Date création fichier (YYYY-MM-DD)</label>
-            <input placeholder="auto" value={scr.file_creation_date} onChange={e => setScr(s => ({ ...s, file_creation_date: e.target.value }))} />
+            <label>{t('gen.fileDate')}</label>
+            <input placeholder={t('common.auto')} value={scr.file_creation_date} onChange={e => setScr(s => ({ ...s, file_creation_date: e.target.value }))} />
           </div>
           <div className="col">
-            <label>Heure création (HHMM)</label>
-            <input placeholder="auto" value={scr.file_creation_time} onChange={e => setScr(s => ({ ...s, file_creation_time: e.target.value }))} />
+            <label>{t('gen.fileTime')}</label>
+            <input placeholder={t('common.auto')} value={scr.file_creation_time} onChange={e => setScr(s => ({ ...s, file_creation_time: e.target.value }))} />
           </div>
           <div className="col">
-            <label>Mois salaire (MMYYYY)</label>
-            <input placeholder="auto" value={scr.salary_month_year} onChange={e => setScr(s => ({ ...s, salary_month_year: e.target.value }))} />
+            <label>{t('gen.salaryMonth')}</label>
+            <input placeholder={t('common.auto')} value={scr.salary_month_year} onChange={e => setScr(s => ({ ...s, salary_month_year: e.target.value }))} />
           </div>
         </div>
 
         <div className="btn-group" style={{ marginTop: 16 }}>
           <button className="primary" onClick={download} disabled={loading || totals.count === 0}>
-            {loading ? 'Génération…' : '⬇ Télécharger le fichier SIF'}
+            {loading ? t('gen.downloading') : t('gen.download')}
           </button>
         </div>
       </div>
 
       <div className="card">
-        <h3>Ajustements pour cette période</h3>
-        <div className="small">Par défaut, les montants de fiche employé sont utilisés. Vous pouvez les ajuster ici sans modifier la fiche.</div>
+        <h3>{t('gen.adjustTitle')}</h3>
+        <div className="small">{t('gen.adjustHelp')}</div>
         <table style={{ marginTop: 10 }}>
           <thead>
             <tr>
-              <th>Inclure</th>
-              <th>ID</th>
-              <th>Nom</th>
-              <th className="right">Fixe (base)</th>
-              <th className="right">Fixe (ce mois)</th>
-              <th className="right">Variable</th>
-              <th className="right">Jours de congé</th>
+              <th>{t('gen.include')}</th>
+              <th>{t('gen.colId')}</th>
+              <th>{t('gen.colName')}</th>
+              <th className="right">{t('gen.colFixedBase')}</th>
+              <th className="right">{t('gen.colFixedMonth')}</th>
+              <th className="right">{t('gen.colVariable')}</th>
+              <th className="right">{t('gen.colLeave')}</th>
             </tr>
           </thead>
           <tbody>
-            {employees.length === 0 && <tr><td colSpan={7} className="center" style={{ padding: 20, color: 'var(--muted)' }}>Aucun employé actif. Ajoutez-en dans l'onglet Employés.</td></tr>}
+            {employees.length === 0 && <tr><td colSpan={7} className="center" style={{ padding: 20, color: 'var(--muted)' }}>{t('gen.noActive')}</td></tr>}
             {employees.map(e => {
               const ov = overrides[e.employee_id] || {};
               const included = ov.include !== false;

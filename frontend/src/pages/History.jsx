@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import { useI18n } from '../i18n/I18nContext.jsx';
 
 export default function History() {
+  const { t } = useI18n();
   const [runs, setRuns] = useState([]);
   const [err, setErr] = useState(null);
 
@@ -11,21 +13,21 @@ export default function History() {
 
   return (
     <div className="card">
-      <h2>Historique des fichiers générés</h2>
+      <h2>{t('hist.title')}</h2>
       {err && <div className="alert error">{err}</div>}
       <table>
         <thead>
           <tr>
-            <th>Date génération</th>
-            <th>Période</th>
-            <th>Jours</th>
-            <th>Employés</th>
-            <th className="right">Total</th>
-            <th>Fichier</th>
+            <th>{t('hist.colDate')}</th>
+            <th>{t('hist.colPeriod')}</th>
+            <th>{t('hist.colDays')}</th>
+            <th>{t('hist.colEmployees')}</th>
+            <th className="right">{t('hist.colTotal')}</th>
+            <th>{t('hist.colFile')}</th>
           </tr>
         </thead>
         <tbody>
-          {runs.length === 0 && <tr><td colSpan={6} className="center" style={{ padding: 20, color: 'var(--muted)' }}>Aucune génération pour le moment.</td></tr>}
+          {runs.length === 0 && <tr><td colSpan={6} className="center" style={{ padding: 20, color: 'var(--muted)' }}>{t('hist.empty')}</td></tr>}
           {runs.map(r => (
             <tr key={r.id}>
               <td>{r.created_at}</td>

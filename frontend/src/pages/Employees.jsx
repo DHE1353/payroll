@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../api.js';
+import { useI18n } from '../i18n/I18nContext.jsx';
 
 const empty = { employee_id: '', full_name: '', routing_code: '', iban: '', fixed_income: 0, variable_income: 0, active: true };
 
 export default function Employees() {
+  const { t } = useI18n();
   const [list, setList] = useState([]);
-  const [editing, setEditing] = useState(null); // null or employee object
+  const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [msg, setMsg] = useState(null);
   const [err, setErr] = useState(null);
@@ -20,13 +22,13 @@ export default function Employees() {
       if (form.id) await api.updateEmployee(form.id, form);
       else await api.createEmployee(form);
       setEditing(null); setCreating(false);
-      setMsg('Employé enregistré');
+      setMsg(t('emp.saved'));
       load();
     } catch (e) { setErr(e.message); }
   };
 
   const remove = async (emp) => {
-    if (!confirm(`Supprimer ${emp.full_name || emp.employee_id} ?`)) return;
+    if (!confirm(t('emp.confirmDelete', { name: emp.full_name || emp.employee_id }))) return;
     try { await api.deleteEmployee(emp.id); load(); }
     catch (e) { setErr(e.message); }
   };
@@ -37,7 +39,8 @@ export default function Employees() {
     setErr(null); setMsg(null);
     try {
       const r = await api.importEmployees(file);
-      setMsg(`Import: ${r.inserted} ajouté(s), ${r.updated} mis à jour${r.errors?.length ? `, ${r.errors.length} erreur(s)` : ''}`);
+      const key = r.errors?.length ? 'emp.importSuccessWithErrors' : 'emp.importSuccess';
+      setMsg(t(key, { inserted: r.inserted, updated: r.updated, errors: r.errors?.length || 0 }));
       load();
     } catch (e) { setErr(e.message); }
     finally { if (fileRef.current) fileRef.current.value = ''; }
@@ -47,17 +50,17 @@ export default function Employees() {
     <div>
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ margin: 0 }}>Employés ({list.length})</h2>
+          <h2 style={{ margin: 0 }}>{t('emp.title')} ({list.length})</h2>
           <div className="btn-group">
             <input ref={fileRef} type="file" accept=".csv,.xlsx" style={{ display: 'none' }} onChange={onImport} />
-            <button onClick={() => fileRef.current?.click()}>Importer CSV/Excel</button>
-            <button className="primary" onClick={() => { setCreating(true); setEditing({ ...empty }); }}>+ Ajouter</button>
+            <button onClick={() => fileRef.current?.click()}>{t('emp.import')}</button>
+            <button className="primary" onClick={() => { setCreating(true); setEditing({ ...empty }); }}>{t('emp.add')}</button>
           </div>
         </div>
         {msg && <div className="alert success" style={{ marginTop: 12 }}>{msg}</div>}
         {err && <div className="alert error" style={{ marginTop: 12 }}>{err}</div>}
         <div className="small" style={{ marginTop: 8 }}>
-          Format d'import attendu (en-têtes): <code className="mono">employee_id, full_name, routing_code, iban, fixed_income, variable_income</code>
+          {t('emp.importHint')} <code className="mono">employee_id, full_name, routing_code, iban, fixed_income, variable_income</code>
         </div>
       </div>
 
@@ -74,18 +77,18 @@ export default function Employees() {
         <table>
           <thead>
             <tr>
-              <th>ID employé</th>
-              <th>Nom</th>
-              <th>Routing</th>
-              <th>IBAN</th>
-              <th className="right">Fixe</th>
-              <th className="right">Variable</th>
-              <th>Actif</th>
+              <th>{t('emp.colId')}</th>
+              <th>{t('emp.colName')}</th>
+              <th>{t('emp.colRouting')}</th>
+              <th>{t('emp.colIban')}</th>
+              <th className="right">{t('emp.colFixed')}</th>
+              <th className="right">{t('emp.colVariable')}</th>
+              <th>{t('emp.colActive')}</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {list.length === 0 && <tr><td colSpan={8} className="center" style={{ padding: 24, color: 'var(--muted)' }}>Aucun employé. Ajoutez-en ou importez un fichier.</td></tr>}
+            {list.length === 0 && <tr><td colSpan={8} className="center" style={{ padding: 24, color: 'var(--muted)' }}>{t('emp.empty')}</td></tr>}
             {list.map(e => (
               <tr key={e.id}>
                 <td className="mono">{e.employee_id}</td>
@@ -94,10 +97,10 @@ export default function Employees() {
                 <td className="mono">{e.iban}</td>
                 <td className="right">{Number(e.fixed_income).toLocaleString()}</td>
                 <td className="right">{Number(e.variable_income).toLocaleString()}</td>
-                <td>{e.active ? <span className="badge success">Actif</span> : <span className="badge muted">Inactif</span>}</td>
+                <td>{e.active ? <span className="badge success">{t('common.active')}</span> : <span className="badge muted">{t('common.inactive')}</span>}</td>
                 <td className="right">
-                  <button onClick={() => { setCreating(false); setEditing(e); }}>Éditer</button>{' '}
-                  <button className="danger" onClick={() => remove(e)}>Suppr.</button>
+                  <button onClick={() => { setCreating(false); setEditing(e); }}>{t('common.edit')}</button>{' '}
+                  <button className="danger" onClick={() => remove(e)}>{t('common.delete')}</button>
                 </td>
               </tr>
             ))}
@@ -109,29 +112,30 @@ export default function Employees() {
 }
 
 function EmployeeForm({ initial, isNew, onSave, onCancel }) {
+  const { t } = useI18n();
   const [f, setF] = useState(initial);
   useEffect(() => { setF(initial); }, [initial]);
   const set = (k) => (e) => setF(x => ({ ...x, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
 
   return (
     <div className="card">
-      <h3>{isNew ? 'Nouvel employé' : 'Modifier employé'}</h3>
+      <h3>{isNew ? t('emp.new') : t('emp.editing')}</h3>
       <div className="row">
-        <div className="col"><label>ID employé *</label><input value={f.employee_id} onChange={set('employee_id')} /></div>
-        <div className="col"><label>Nom complet</label><input value={f.full_name || ''} onChange={set('full_name')} /></div>
+        <div className="col"><label>{t('emp.fieldId')} *</label><input value={f.employee_id} onChange={set('employee_id')} /></div>
+        <div className="col"><label>{t('emp.fieldName')}</label><input value={f.full_name || ''} onChange={set('full_name')} /></div>
       </div>
       <div className="row" style={{ marginTop: 10 }}>
-        <div className="col"><label>Code routing *</label><input value={f.routing_code} onChange={set('routing_code')} /></div>
-        <div className="col" style={{ flex: 2 }}><label>IBAN *</label><input value={f.iban} onChange={set('iban')} placeholder="AE..." /></div>
+        <div className="col"><label>{t('emp.fieldRouting')} *</label><input value={f.routing_code} onChange={set('routing_code')} /></div>
+        <div className="col" style={{ flex: 2 }}><label>{t('emp.fieldIban')} *</label><input value={f.iban} onChange={set('iban')} placeholder="AE..." /></div>
       </div>
       <div className="row" style={{ marginTop: 10 }}>
-        <div className="col"><label>Salaire fixe (AED)</label><input type="number" step="0.01" value={f.fixed_income} onChange={set('fixed_income')} /></div>
-        <div className="col"><label>Salaire variable (AED)</label><input type="number" step="0.01" value={f.variable_income} onChange={set('variable_income')} /></div>
-        <div className="col"><label>&nbsp;</label><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={!!f.active} onChange={set('active')} style={{ width: 'auto' }} /> Actif</label></div>
+        <div className="col"><label>{t('emp.fieldFixed')}</label><input type="number" step="0.01" value={f.fixed_income} onChange={set('fixed_income')} /></div>
+        <div className="col"><label>{t('emp.fieldVariable')}</label><input type="number" step="0.01" value={f.variable_income} onChange={set('variable_income')} /></div>
+        <div className="col"><label>&nbsp;</label><label style={{ display: 'flex', alignItems: 'center', gap: 6 }}><input type="checkbox" checked={!!f.active} onChange={set('active')} style={{ width: 'auto' }} /> {t('common.active')}</label></div>
       </div>
       <div className="btn-group" style={{ marginTop: 16 }}>
-        <button className="primary" onClick={() => onSave(f)}>Enregistrer</button>
-        <button onClick={onCancel}>Annuler</button>
+        <button className="primary" onClick={() => onSave(f)}>{t('common.save')}</button>
+        <button onClick={onCancel}>{t('common.cancel')}</button>
       </div>
     </div>
   );

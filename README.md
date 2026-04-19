@@ -5,6 +5,9 @@ Application web **full-stack** pour générer des fichiers Excel SIF (Salary Inf
 ## Fonctionnalités
 
 - **Multi-entreprise (multi-tenant)** — chaque société gère ses propres employés, isolée des autres
+- **Multilingue** : Français / English / العربية (avec support RTL complet pour l'arabe)
+  - Détection automatique de la langue du navigateur au premier chargement
+  - Sélecteur de langue accessible depuis la barre de navigation et les pages de connexion
 - **Authentification** par email/mot de passe (JWT)
 - **Gestion des employés** — ajout, modification, suppression, activation/désactivation
 - **Import CSV/Excel en masse** — colonnes : `employee_id, full_name, routing_code, iban, fixed_income, variable_income`

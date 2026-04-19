@@ -20,6 +20,35 @@ body {
   font-size: 14px;
 }
 
+/* Typographie adaptée à l'arabe */
+html[lang="ar"] body,
+body.rtl {
+  font-family: "Segoe UI", "Tahoma", "Noto Naskh Arabic", "Arabic Typesetting", sans-serif;
+  font-size: 15px;
+}
+
+/* Support RTL global */
+html[dir="rtl"] .right { text-align: left; }
+html[dir="rtl"] .navbar nav { flex-direction: row-reverse; }
+html[dir="rtl"] .navbar .user { flex-direction: row-reverse; }
+html[dir="rtl"] .btn-group { flex-direction: row-reverse; }
+html[dir="rtl"] th, html[dir="rtl"] td { text-align: right; }
+html[dir="rtl"] th.right, html[dir="rtl"] td.right { text-align: left; }
+
+/* Les identifiants (IBAN, routing, ID employé) restent en LTR même en RTL */
+html[dir="rtl"] .mono { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+/* Inputs numériques et dates : rester LTR en RTL pour lisibilité */
+html[dir="rtl"] input[type="number"],
+html[dir="rtl"] input[type="date"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="password"] {
+  direction: ltr;
+  text-align: right;
+}
+
+.lang-switch { cursor: pointer; }
+
 a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 

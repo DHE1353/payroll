@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, useNavigate } from 'react-router-dom';
 import { api, clearToken } from './api.js';
+import { useI18n } from './i18n/I18nContext.jsx';
+import LanguageSwitcher from './components/LanguageSwitcher.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Employees from './pages/Employees.jsx';
@@ -9,6 +11,7 @@ import CompanySettings from './pages/CompanySettings.jsx';
 import History from './pages/History.jsx';
 
 export default function App() {
+  const { t } = useI18n();
   const [auth, setAuth] = useState({ loading: true, user: null, company: null });
   const navigate = useNavigate();
 
@@ -31,7 +34,7 @@ export default function App() {
     navigate('/login');
   };
 
-  if (auth.loading) return <div className="container">Chargement…</div>;
+  if (auth.loading) return <div className="container">{t('common.loading')}</div>;
 
   if (!auth.user) {
     return (
@@ -46,16 +49,17 @@ export default function App() {
   return (
     <>
       <header className="navbar">
-        <div className="brand">📄 WPS SIF — {auth.company?.name}</div>
+        <div className="brand">📄 {t('nav.brand')} — {auth.company?.name}</div>
         <nav>
-          <NavLink to="/generate" className={({isActive}) => isActive ? 'active' : ''}>Générer</NavLink>
-          <NavLink to="/employees" className={({isActive}) => isActive ? 'active' : ''}>Employés</NavLink>
-          <NavLink to="/history" className={({isActive}) => isActive ? 'active' : ''}>Historique</NavLink>
-          <NavLink to="/settings" className={({isActive}) => isActive ? 'active' : ''}>Entreprise</NavLink>
+          <NavLink to="/generate" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.generate')}</NavLink>
+          <NavLink to="/employees" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.employees')}</NavLink>
+          <NavLink to="/history" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.history')}</NavLink>
+          <NavLink to="/settings" className={({isActive}) => isActive ? 'active' : ''}>{t('nav.settings')}</NavLink>
         </nav>
         <div className="user">
+          <LanguageSwitcher compact />
           <span>{auth.user.email}</span>
-          <button onClick={logout}>Déconnexion</button>
+          <button onClick={logout}>{t('nav.logout')}</button>
         </div>
       </header>
       <div className="container">
