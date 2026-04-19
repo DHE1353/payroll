@@ -72,7 +72,7 @@ export default function App() {
   return (
     <>
       <header className="navbar">
-        <div className="brand">📄 {t('nav.brand')} — {auth.company?.name}</div>
+        <div className="brand"><span className="brand-name">WPS SIF</span> <span className="brand-sub">par HRH — {auth.company?.name}</span></div>
         <nav>
           <NavItem to="/dashboard">{t('nav.dashboard')}</NavItem>
           <NavItem to="/leaves">{t('nav.leaves')}</NavItem>

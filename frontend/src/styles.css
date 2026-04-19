@@ -55,18 +55,23 @@ a:hover { text-decoration: underline; }
 .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
 
 .navbar {
-  background: var(--card);
-  border-bottom: 1px solid var(--border);
+  background: #0a0f1e;
+  border-bottom: 1px solid #1a2035;
   padding: 12px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.navbar .brand { font-weight: 700; font-size: 16px; }
+.navbar .brand { font-weight: 900; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; }
+.navbar .brand .brand-name { color: #3b82f6; }
+.navbar .brand .brand-sub { color: #64748b; font-weight: 400; font-size: 13px; text-transform: none; letter-spacing: 0; }
 .navbar nav { display: flex; gap: 16px; }
-.navbar nav a { color: var(--text); font-weight: 500; padding: 6px 10px; border-radius: 6px; }
-.navbar nav a.active { background: #eaeef2; }
-.navbar .user { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 12px; }
+.navbar nav a { color: #94a3b8; font-weight: 500; padding: 6px 10px; border-radius: 6px; transition: color 0.2s; }
+.navbar nav a:hover { color: #e2e8f0; }
+.navbar nav a.active { background: #1e293b; color: #3b82f6; }
+.navbar .user { color: #94a3b8; font-size: 13px; display: flex; align-items: center; gap: 12px; }
+.navbar .user button { color: #94a3b8; border-color: #334155; }
+.navbar .user button:hover { color: #e2e8f0; border-color: #475569; }
 
 .card {
   background: var(--card);
